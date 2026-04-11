@@ -1,23 +1,9 @@
 import express from 'express'
-import prisma from './database.js'
-import router from './routes/index.route.js'
-const app = express()
-const port = 3000
-app.use(express.json())
-app.use(router)
+import prisma from '../database.js'
+const router = express.Router()
 
-app.listen(port, () => {
-  console.log(`Server is running at http://localhost:${port}`)
-})
-
-app.get('/', (req, res) => {
-  res.send('test!!')
-})
-
-app.get('/books/:id', async (req, res) => {
-  // Mendapatkan ID buku yang akan diupdate dari parameter URL
-  // Lalu mengubahnya menjadi tipe data integer menggunakan parseInt
-  const id = parseInt(req.params.id)
+router.get('/books/:id', async (req, res) => {
+    const id = parseInt(req.params.id)
 
   // Mengambil buku dengan ID yang sesuai dari database menggunakan Prisma Client
   const book = await prisma.books.findUnique({
@@ -41,9 +27,8 @@ app.get('/books/:id', async (req, res) => {
   })
 })
 
-app.get('/books', async (req, res) => {
-  // Mengambil semua buku dari database menggunakan Prisma Client
-  const books = await prisma.books.findMany()
+router.get('/books', async (req, res) => {
+    const books = await prisma.books.findMany()
   
   res.json({
     "success": true,
@@ -52,7 +37,8 @@ app.get('/books', async (req, res) => {
   })
 })
 
-app.post('/books', async (req, res) => {
+
+router.post('/books', async (req, res) => {
   // Mendapatkan data buku baru dari request body
   const { title, author, year } = req.body
 
@@ -72,7 +58,7 @@ app.post('/books', async (req, res) => {
   })
 })
 
-app.put('/books/:id', async (req, res) => {
+router.put('/books/:id', async (req, res) => {
   // Mendapatkan ID buku yang akan diupdate dari parameter URL
   // Lalu mengubahnya menjadi tipe data integer menggunakan parseInt
   const id = parseInt(req.params.id)
@@ -114,7 +100,7 @@ app.put('/books/:id', async (req, res) => {
   })
 })
 
-app.delete('/books/:id', async (req, res) => {
+router.delete('/books/:id', async (req, res) => {
   // Mendapatkan ID buku yang akan diupdate dari parameter URL
   // Lalu mengubahnya menjadi tipe data integer menggunakan parseInt
   const id = parseInt(req.params.id)
@@ -146,3 +132,5 @@ app.delete('/books/:id', async (req, res) => {
     "message": "Book deleted successfully"
   })
 })
+
+export default router
