@@ -42,6 +42,35 @@ export const getUserById = async (req, res) => {
   }
 };
 
+export const getUserByIdWithProfile = async (req, res) => {
+const id = parseInt(req.params.id)
+
+  // Mengambil pengguna dengan ID yang sesuai dari database menggunakan Prisma Client
+  const user = await prisma.users.findUnique({
+    where: {
+      id: id,
+    },
+    include: {
+      profiles: true
+    }
+  })
+
+  // Jika pengguna tidak ditemukan, kirimkan pesan error
+  if (!user) {
+    res.json({
+      success: false,
+      message: `User with ID: ${id} not found`,
+    })
+    return
+  }
+
+  res.json({
+    success: true,
+    message: 'User retrieved successfully',
+    data: user,
+  })
+}
+
 // POST: Membuat user baru
 export const createUser = async (req, res) => {
   const { name, email, role } = req.body;
