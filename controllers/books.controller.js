@@ -1,5 +1,5 @@
 import express from "express";
-import prisma from "../database";
+import prisma from "../configs/database.config.js";
 
 export const getBooks = async (req, res) => {
 
