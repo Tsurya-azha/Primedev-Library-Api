@@ -40,11 +40,12 @@ const id = parseInt(req.params.id)
 
 export const createBook = async (req, res) => {
 
-const { title, author, year } = req.body
+const { categoryId, title, author, year } = req.body
 
   // Menambahkan buku baru ke database menggunakan Prisma Client
   const book = await prisma.books.create({
     data: {
+      categoryId,
       title,
       author,
       year

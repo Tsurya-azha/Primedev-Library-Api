@@ -2,15 +2,19 @@
 
 import express from 'express'
 import {
-  
+  getAllProfiles,
+  getProfileById,
+  createProfile,
+  updateProfile,
+  deleteProfile,
 } from '../controllers/profiles.controller.js'
 
 const router = express.Router()
 
-router.get('/', /* TODO: ADD GET ALL PROFILES CONTROLLER HERE */)
-router.get('/:id', /* TODO: ADD GET PROFILE CONTROLLER HERE */)
-router.post('/', /* TODO: ADD CREATE PROFILE CONTROLLER HERE */)
-router.put('/:id', /* TODO: ADD UPDATE PROFILE CONTROLLER HERE */)
-router.delete('/:id', /* TODO: ADD DELETE PROFILE CONTROLLER HERE */)
+router.get('/', getAllProfiles)
+router.get('/:id', getProfileById)
+router.post('/', createProfile)
+router.put('/:id', updateProfile)
+router.delete('/:id', deleteProfile)
 
 export default router

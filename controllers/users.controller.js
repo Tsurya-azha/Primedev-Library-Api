@@ -73,13 +73,14 @@ const id = parseInt(req.params.id)
 
 // POST: Membuat user baru
 export const createUser = async (req, res) => {
-  const { name, email, role } = req.body;
+  const { name, email, password, role } = req.body;
 
   try {
     const user = await prisma.users.create({
       data: {
         name,
         email,
+        password,
         role
       }
     });
