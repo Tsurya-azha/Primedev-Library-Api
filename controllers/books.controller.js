@@ -2,10 +2,19 @@ import express from "express";
 import prisma from "../configs/database.config.js";
 import {isCategoryExist} from './categories.controller.js';
 import { validationResult } from "express-validator";
+import { getFileUrl, uploadFile } from './cloudinary.controller.js';
 
 export const getBooks = async (req, res) => {
 
 const books = await prisma.books.findMany()
+
+ books.forEach((book) => {
+    if (!book.cloudinaryId) {
+      book.coverUrl = null
+    } else {
+	    book.coverUrl = getFileUrl(book.cloudinaryId)
+    }
+  })
   
   res.status(200).json({
     "success": true,
@@ -52,6 +61,16 @@ if (!validationErrors.isEmpty()) {
     errors: validationErrors.array(),
   })
 }
+
+const cover = req.file
+  let cloudinaryId = null
+
+  if (cover) {
+    const result = await uploadFile(cover)
+
+    cloudinaryId = result.public_id
+  }
+
   const { categoryId, title, author, year } = req.body
 
   // Mengecek apakah kategori dengan ID yang diberikan ada di database menggunakan fungsi isCategoryExist
@@ -71,6 +90,7 @@ if (!validationErrors.isEmpty()) {
       title,
       author,
       year,
+      cloudinaryId,
     },
   })
 
@@ -122,6 +142,21 @@ if (!validationErrors.isEmpty()) {
     })
   }
 
+  const cover = req.file
+  let cloudinaryId = book.cloudinaryId
+
+  // Jika ada file cover yang diunggah, unggah ke Cloudinary dan dapatkan public_id-nya
+  if (cover) {
+    // Jika buku sudah memiliki cover sebelumnya,
+    // hapus file cover lama dari Cloudinary menggunakan public_id yang disimpan di database
+    if (book.cloudinaryId) {
+      const deleted = await deleteFile(book.cloudinaryId)
+    }
+
+    const result = await uploadFile(cover)
+    cloudinaryId = result.public_id
+  }
+
   // Mengupdate buku dengan ID yang sesuai di database menggunakan Prisma Client
   await prisma.books.update({
     where: {
@@ -132,6 +167,7 @@ if (!validationErrors.isEmpty()) {
       title,
       author,
       year,
+      cloudinaryId,
     },
   })
 
@@ -161,6 +197,10 @@ const id = parseInt(req.params.id)
     })
   }
 
+   if (book.cloudinaryId) {
+    const deleted = await deleteFile(book.cloudinaryId)
+  }
+
   // Menghapus buku dengan ID yang sesuai di database menggunakan Prisma Client
   await prisma.books.delete({
     where: {
@@ -184,3 +224,5 @@ export const isBookExist = async (id) => {
 
   return !!book 
 }
+
+

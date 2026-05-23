@@ -32,6 +32,7 @@ model Books {
   author       String
   year         Int
   available    Boolean     @default(true)
+  cloudinary   String?
   createdAt    DateTime    @default(now())
   categories   Categories? @relation(fields: [categoryId], references: [id])
   borrowings   Borrowings[]
