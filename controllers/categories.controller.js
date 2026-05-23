@@ -158,3 +158,14 @@ export const deleteCategory = async (req, res) => {
     res.status(500).json({ "success": false, "message": error.message });
   }
 };
+
+export const isCategoryExist = async (id) => {
+  // Mencari kategori dengan ID yang sesuai di database menggunakan Prisma Client
+  const category = await prisma.categories.findUnique({
+    where: {
+      id: id,
+    },
+  })
+
+  return !!category
+}

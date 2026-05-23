@@ -8,7 +8,7 @@ import {
   createCategory,
   updateCategory,
   deleteCategory,
-} from '../controllers/categories.controller.js'
+} from '../controllers/categories.controller.js';
 
 const router = express.Router()
 

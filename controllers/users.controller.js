@@ -118,6 +118,7 @@ export const updateUser = async (req, res) => {
       where: { id: id },
       data: {
         name,
+        password,
         email,
         role
       }
@@ -161,3 +162,14 @@ export const deleteUser = async (req, res) => {
     res.status(500).json({ "success": false, "message": error.message });
   }
 };
+
+export const isUserExist = async (id) => {
+
+  const user =await prisma.users.findUnique({
+    where: {
+      id: id,
+    },
+  })
+
+  return !!user
+}
