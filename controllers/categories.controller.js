@@ -1,7 +1,7 @@
 import express from "express";
 import prisma from "../configs/database.config.js";
+import logger from '../configs/pino.config.js'
 
-// GET: Mendapatkan semua daftar category
 export const getAllCategories = async (req, res) => {
   try {
     const categories = await prisma.categories.findMany();
@@ -12,22 +12,18 @@ export const getAllCategories = async (req, res) => {
       "data": categories
     });
   } catch (error) {
-    res.status(500).json({ "success": false, "message": error.message });
+    logger.error(error, 'Error saat mengambil seluruh kategori')
+    res.status(500).json({ "success": false, "message": "Internal server error", "error": error.message });
   }
 }
 
 export const getAllBooksByCategoryId = async (req, res) => {
-  
-  const id = parseInt(req.params.id);
+  const id = parseInt(req.params.id, 10);
 
   try {
     const category = await prisma.categories.findUnique({
-      where: {
-         id: id,
-        },
-        include: {
-          books: true,
-        },
+      where: { id: id },
+      include: { books: true },
     })
 
     if (!category) {
@@ -43,13 +39,13 @@ export const getAllBooksByCategoryId = async (req, res) => {
       "data": category
     });
   } catch (error) {
-    res.status(500).json({ "success": false, "message": error.message }); 
+    logger.error(error, `Error saat mengambil buku berdasarkan kategori ID: ${req.params.id}`)
+    res.status(500).json({ "success": false, "message": "Internal server error", "error": error.message }); 
   }
-  };
+};
 
-// GET: Mendapatkan category berdasarkan ID
 export const getCategoryById = async (req, res) => {
-  const id = parseInt(req.params.id);
+  const id = parseInt(req.params.id, 10);
 
   try {
     const category = await prisma.categories.findUnique({
@@ -69,21 +65,20 @@ export const getCategoryById = async (req, res) => {
       "data": category
     });
   } catch (error) {
-    res.status(500).json({ "success": false, "message": error.message });
+    logger.error(error, `Error saat mengambil kategori ID: ${req.params.id}`)
+    res.status(500).json({ "success": false, "message": "Internal server error", "error": error.message });
   }
 };
 
-// POST: Membuat category baru
 export const createCategory = async (req, res) => {
   const { name, description } = req.body;
 
   try {
     const category = await prisma.categories.create({
-      data: {
-        name,
-        description
-      }
+      data: { name, description }
     });
+
+    logger.info(`Kategori baru dibuat: ${name}`)
 
     res.status(201).json({
       "success": true,
@@ -91,13 +86,13 @@ export const createCategory = async (req, res) => {
       "data": category
     });
   } catch (error) {
-    res.status(500).json({ "success": false, "message": error.message });
+    logger.error(error, 'Error saat membuat kategori baru')
+    res.status(500).json({ "success": false, "message": "Internal server error", "error": error.message });
   }
 };
 
-// PUT: Memperbarui data category berdasarkan ID
 export const updateCategory = async (req, res) => {
-  const id = parseInt(req.params.id);
+  const id = parseInt(req.params.id, 10);
   const { name, description } = req.body;
 
   try {
@@ -114,11 +109,10 @@ export const updateCategory = async (req, res) => {
 
     const updatedCategory = await prisma.categories.update({
       where: { id: id },
-      data: {
-        name,
-        description
-      }
+      data: { name, description }
     });
+
+    logger.info(`Kategori ID ${id} sukses diperbarui`)
 
     res.json({
       "success": true,
@@ -126,13 +120,13 @@ export const updateCategory = async (req, res) => {
       "data": updatedCategory
     });
   } catch (error) {
-    res.status(500).json({ "success": false, "message": error.message });
+    logger.error(error, `Error saat memperbarui kategori ID: ${req.params.id}`)
+    res.status(500).json({ "success": false, "message": "Internal server error", "error": error.message });
   }
 };
 
-// DELETE: Menghapus category berdasarkan ID
 export const deleteCategory = async (req, res) => {
-  const id = parseInt(req.params.id);
+  const id = parseInt(req.params.id, 10);
 
   try {
     const categoryExist = await prisma.categories.findUnique({
@@ -146,26 +140,26 @@ export const deleteCategory = async (req, res) => {
       });
     }
 
-    await prisma.categories.delete({
-      where: { id: id }
-    });
+    await prisma.categories.delete({ where: { id: id } });
+
+    logger.info(`Kategori ID ${id} berhasil dihapus`)
 
     res.json({
       "success": true,
       "message": "Category deleted successfully"
     });
   } catch (error) {
-    res.status(500).json({ "success": false, "message": error.message });
+    logger.error(error, `Error saat menghapus kategori ID: ${req.params.id}`)
+    res.status(500).json({ "success": false, "message": "Internal server error", "error": error.message });
   }
 };
 
 export const isCategoryExist = async (id) => {
-  // Mencari kategori dengan ID yang sesuai di database menggunakan Prisma Client
-  const category = await prisma.categories.findUnique({
-    where: {
-      id: id,
-    },
-  })
-
-  return !!category
+  try {
+    const category = await prisma.categories.findUnique({ where: { id: id } })
+    return !!category
+  } catch (error) {
+    logger.error(error, `Error saat cek isCategoryExist ID: ${id}`)
+    return false
+  }
 }

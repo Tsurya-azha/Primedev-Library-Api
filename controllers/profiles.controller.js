@@ -1,13 +1,11 @@
 import express from "express";
 import prisma from "../configs/database.config.js";
+import logger from '../configs/pino.config.js'
 
-// GET: Mendapatkan semua daftar profile
 export const getAllProfiles = async (req, res) => {
   try {
     const profiles = await prisma.profiles.findMany({
-      include: {
-        users: true // Opsional: Menampilkan data user pemilik profile
-      }
+      include: { users: true }
     });
 
     res.json({
@@ -16,20 +14,18 @@ export const getAllProfiles = async (req, res) => {
       "data": profiles
     });
   } catch (error) {
-    res.status(500).json({ "success": false, "message": error.message });
+    logger.error(error, 'Error saat mengambil semua data profile')
+    res.status(500).json({ "success": false, "message": "Internal server error", "error": error.message });
   }
 };
 
-// GET: Mendapatkan profile berdasarkan ID
 export const getProfileById = async (req, res) => {
-  const id = parseInt(req.params.id);
+  const id = parseInt(req.params.id, 10);
 
   try {
     const profile = await prisma.profiles.findUnique({
       where: { id: id },
-      include: {
-        users: true
-      }
+      include: { users: true }
     });
 
     if (!profile) {
@@ -45,11 +41,11 @@ export const getProfileById = async (req, res) => {
       "data": profile
     });
   } catch (error) {
-    res.status(500).json({ "success": false, "message": error.message });
+    logger.error(error, `Error saat mengambil profile ID: ${req.params.id}`)
+    res.status(500).json({ "success": false, "message": "Internal server error", "error": error.message });
   }
 };
 
-// POST: Membuat profile baru
 export const createProfile = async (req, res) => {
   const { bio, avatar, userId } = req.body;
 
@@ -58,9 +54,11 @@ export const createProfile = async (req, res) => {
       data: {
         bio,
         avatar,
-        userId: parseInt(userId) // Memastikan userId berupa angka
+        userId: parseInt(userId, 10)
       }
     });
+
+    logger.info(`Profile baru sukses dibuat untuk User ID: ${userId}`)
 
     res.status(201).json({
       "success": true,
@@ -68,13 +66,13 @@ export const createProfile = async (req, res) => {
       "data": profile
     });
   } catch (error) {
-    res.status(500).json({ "success": false, "message": error.message });
+    logger.error(error, 'Error saat membuat profile baru')
+    res.status(500).json({ "success": false, "message": "Internal server error", "error": error.message });
   }
 };
 
-// PUT: Memperbarui data profile berdasarkan ID
 export const updateProfile = async (req, res) => {
-  const id = parseInt(req.params.id);
+  const id = parseInt(req.params.id, 10);
   const { bio, avatar } = req.body;
 
   try {
@@ -91,11 +89,10 @@ export const updateProfile = async (req, res) => {
 
     const updatedProfile = await prisma.profiles.update({
       where: { id: id },
-      data: {
-        bio,
-        avatar
-      }
+      data: { bio, avatar }
     });
+
+    logger.info(`Profile ID ${id} sukses diperbarui`)
 
     res.json({
       "success": true,
@@ -103,13 +100,13 @@ export const updateProfile = async (req, res) => {
       "data": updatedProfile
     });
   } catch (error) {
-    res.status(500).json({ "success": false, "message": error.message });
+    logger.error(error, `Error saat memperbarui profile ID: ${req.params.id}`)
+    res.status(500).json({ "success": false, "message": "Internal server error", "error": error.message });
   }
 };
 
-// DELETE: Menghapus profile berdasarkan ID
 export const deleteProfile = async (req, res) => {
-  const id = parseInt(req.params.id);
+  const id = parseInt(req.params.id, 10);
 
   try {
     const profileExist = await prisma.profiles.findUnique({
@@ -123,15 +120,16 @@ export const deleteProfile = async (req, res) => {
       });
     }
 
-    await prisma.profiles.delete({
-      where: { id: id }
-    });
+    await prisma.profiles.delete({ where: { id: id } });
+
+    logger.info(`Profile ID ${id} sukses dihapus`)
 
     res.json({
       "success": true,
       "message": "Profile deleted successfully"
     });
   } catch (error) {
-    res.status(500).json({ "success": false, "message": error.message });
+    logger.error(error, `Error saat menghapus profile ID: ${req.params.id}`)
+    res.status(500).json({ "success": false, "message": "Internal server error", "error": error.message });
   }
 };

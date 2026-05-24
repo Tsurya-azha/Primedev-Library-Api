@@ -1,7 +1,7 @@
 import express from "express";
 import prisma from "../configs/database.config.js";
+import logger from '../configs/pino.config.js'
 
-// GET: Mendapatkan semua daftar user
 export const getUsers = async (req, res) => {
   try {
     const users = await prisma.users.findMany();
@@ -12,13 +12,13 @@ export const getUsers = async (req, res) => {
       "data": users
     });
   } catch (error) {
-    res.status(500).json({ "success": false, "message": error.message });
+    logger.error(error, 'Error saat mengambil daftar user')
+    res.status(500).json({ "success": false, "message": "Internal server error", "error": error.message });
   }
 };
 
-// GET: Mendapatkan user berdasarkan ID
 export const getUserById = async (req, res) => {
-  const id = parseInt(req.params.id);
+  const id = parseInt(req.params.id, 10);
 
   try {
     const user = await prisma.users.findUnique({
@@ -38,52 +38,47 @@ export const getUserById = async (req, res) => {
       "data": user
     });
   } catch (error) {
-    res.status(500).json({ "success": false, "message": error.message });
+    logger.error(error, `Error saat mengambil user ID: ${req.params.id}`)
+    res.status(500).json({ "success": false, "message": "Internal server error", "error": error.message });
   }
 };
 
 export const getUserByIdWithProfile = async (req, res) => {
-const id = parseInt(req.params.id)
+  const id = parseInt(req.params.id, 10)
 
-  // Mengambil pengguna dengan ID yang sesuai dari database menggunakan Prisma Client
-  const user = await prisma.users.findUnique({
-    where: {
-      id: id,
-    },
-    include: {
-      profiles: true
-    }
-  })
-
-  // Jika pengguna tidak ditemukan, kirimkan pesan error
-  if (!user) {
-    res.json({
-      success: false,
-      message: `User with ID: ${id} not found`,
+  try {
+    const user = await prisma.users.findUnique({
+      where: { id: id },
+      include: { profiles: true }
     })
-    return
-  }
 
-  res.json({
-    success: true,
-    message: 'User retrieved successfully',
-    data: user,
-  })
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: `User with ID: ${id} not found`,
+      })
+    }
+
+    res.json({
+      success: true,
+      message: 'User retrieved successfully',
+      data: user,
+    })
+  } catch (error) {
+    logger.error(error, `Error saat mengambil data user + profile ID: ${req.params.id}`)
+    res.status(500).json({ success: false, message: "Internal server error", error: error.message })
+  }
 }
 
-// POST: Membuat user baru
 export const createUser = async (req, res) => {
   const { name, email, password, role } = req.body;
 
   try {
     const user = await prisma.users.create({
-      data: {
-        name,
-        email,
-        password,
-        role
-      }
+      data: { name, email, password, role }
     });
+
+    logger.info(`User baru dibuat manual via dashboard: ${email}`)
 
     res.status(201).json({
       "success": true,
@@ -91,17 +86,16 @@ export const createUser = async (req, res) => {
       "data": user
     });
   } catch (error) {
-    res.status(500).json({ "success": false, "message": error.message });
+    logger.error(error, 'Error saat membuat user baru')
+    res.status(500).json({ "success": false, "message": "Internal server error", "error": error.message });
   }
 };
 
-// PUT: Memperbarui data user berdasarkan ID
 export const updateUser = async (req, res) => {
-  const id = parseInt(req.params.id);
-  const { name, email, role } = req.body;
+  const id = parseInt(req.params.id, 10);
+  const { name, email, password, role } = req.body; // Ditambahkan password agar aman
 
   try {
-    // Cek apakah user ada
     const userExist = await prisma.users.findUnique({
       where: { id: id }
     });
@@ -113,16 +107,12 @@ export const updateUser = async (req, res) => {
       });
     }
 
-    // Update data user
     const updatedUser = await prisma.users.update({
       where: { id: id },
-      data: {
-        name,
-        password,
-        email,
-        role
-      }
+      data: { name, password, email, role }
     });
+
+    logger.info(`Data user ID ${id} sukses diperbarui`)
 
     res.json({
       "success": true,
@@ -130,13 +120,13 @@ export const updateUser = async (req, res) => {
       "data": updatedUser
     });
   } catch (error) {
-    res.status(500).json({ "success": false, "message": error.message });
+    logger.error(error, `Error saat mengupdate user ID: ${req.params.id}`)
+    res.status(500).json({ "success": false, "message": "Internal server error", "error": error.message });
   }
 };
 
-// DELETE: Menghapus user berdasarkan ID
 export const deleteUser = async (req, res) => {
-  const id = parseInt(req.params.id);
+  const id = parseInt(req.params.id, 10);
 
   try {
     const userExist = await prisma.users.findUnique({
@@ -150,26 +140,26 @@ export const deleteUser = async (req, res) => {
       });
     }
 
-    await prisma.users.delete({
-      where: { id: id }
-    });
+    await prisma.users.delete({ where: { id: id } });
+
+    logger.info(`User ID ${id} sukses dihapus dari database`)
 
     res.json({
       "success": true,
       "message": "User deleted successfully"
     });
   } catch (error) {
-    res.status(500).json({ "success": false, "message": error.message });
+    logger.error(error, `Error saat menghapus data user ID: ${req.params.id}`)
+    res.status(500).json({ "success": false, "message": "Internal server error", "error": error.message });
   }
 };
 
 export const isUserExist = async (id) => {
-
-  const user =await prisma.users.findUnique({
-    where: {
-      id: id,
-    },
-  })
-
-  return !!user
+  try {
+    const user = await prisma.users.findUnique({ where: { id: id } })
+    return !!user
+  } catch (error) {
+    logger.error(error, `Error saat cek isUserExist ID: ${id}`)
+    return false
+  }
 }

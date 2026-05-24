@@ -1,4 +1,5 @@
 import cloudinary from "../configs/cloudinary.config.js";
+import logger from '../configs/pino.config.js'
 
 export const getFileUrl = (publicId) => {
   return cloudinary.v2.url(publicId);
@@ -7,7 +8,7 @@ export const getFileUrl = (publicId) => {
 export const uploadFile = async (
   file,
   options = {
-    folder: 'library-api/book/covers', // Dikembalikan untuk cover buku
+    folder: 'library-api/book/covers',
   },
 ) => {
   try {
@@ -17,8 +18,7 @@ export const uploadFile = async (
     );
     return result;
   } catch (error) {
-    // Tampilkan error asli di terminal agar mudah di-debug
-    console.error('Detail Error Upload Cloudinary:', error.message || error);
+    logger.error(error, 'Detail Error Upload Cloudinary')
     throw error;
   }
 }
@@ -28,7 +28,7 @@ export const deleteFile = async (publicId) => {
     const result = await cloudinary.v2.uploader.destroy(publicId);
     return result;
   } catch (error) {
-    console.error('Detail Error Delete Cloudinary:', error.message || error);
+    logger.error(error, 'Detail Error Delete Cloudinary')
     throw error;
   }
 }

@@ -1,12 +1,15 @@
 import express from 'express'
 import router from './routes/index.route.js'
+import PinoHttp, { pinoHttp } from 'pino-http'
+import logger from './configs/pino.config.js'
 const app = express()
 const port = 3000
+app.use(pinoHttp())
 app.use(express.json())
 app.use(router)
 
 app.listen(port, () => {
-  console.log(`Server is running at http://localhost:${port}`)
+  logger.info(`Server is running at http://localhost:${port}`)
 })
 
 import { v2 as cloudinary } from 'cloudinary';

@@ -7,13 +7,13 @@ import {
   updateBook,
   deleteBook,
 } from '../controllers/books.controller.js'
-
 import {
   bookValidation,
   updateBookValidation,
 } from "../validation/books.validation.js"
 import { authorizeAdmin } from '../middleware/admin.middleware.js'
 import multer from 'multer'
+import logger from '../configs/pino.config.js'
 
 const storage = multer.memoryStorage()
 const upload = multer({ storage })
