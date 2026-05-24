@@ -8,9 +8,16 @@ app.use(pinoHttp())
 app.use(express.json())
 app.use(router)
 
+
+if (process.env.ENV !== 'production') {
+  const port = process.env.PORT || 3000
 app.listen(port, () => {
   logger.info(`Server is running at http://localhost:${port}`)
+  logger.info(`Application started successfuly`)
 })
+}
+
+export default app
 
 import { v2 as cloudinary } from 'cloudinary';
 

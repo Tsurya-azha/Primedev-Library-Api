@@ -1,7 +1,8 @@
 import prisma from '../configs/database.config.js';
+import logger from '../configs/pino.config.js';
 
 async function main() {
-  console.log("Mulai membersihkan database...");
+  logger.info("Mulai membersihkan database...");
 
   // 1. Bersihkan tabel dari bawah (child) ke atas (parent) agar tidak kena error relasi
   await prisma.borrowings.deleteMany();
@@ -10,7 +11,7 @@ async function main() {
   await prisma.categories.deleteMany();
   await prisma.users.deleteMany();
 
-  console.log("Database berhasil dibersihkan! Mulai melakukan seeding...");
+  logger.info("Database berhasil dibersihkan! Mulai melakukan seeding...");
 
   // 2. Seeding Categories (20 Data)
   const categoryNames = [
@@ -27,7 +28,7 @@ async function main() {
     });
     createdCategories.push(category);
   }
-  console.log(`Berhasil membuat ${createdCategories.length} Categories.`);
+  logger.info(`Berhasil membuat ${createdCategories.length} Categories.`);
 
   // 3. Seeding Users & Profiles (20 Data sekaligus menggunakan nested create)
   const createdUsers = [];
@@ -48,7 +49,7 @@ async function main() {
     });
     createdUsers.push(user);
   }
-  console.log(`Berhasil membuat ${createdUsers.length} Users beserta Profiles-nya.`);
+  logger.info(`Berhasil membuat ${createdUsers.length} Users beserta Profiles-nya.`);
 
   // 4. Seeding Books (25 Data)
   const createdBooks = [];
@@ -67,7 +68,7 @@ async function main() {
     });
     createdBooks.push(book);
   }
-  console.log(`Berhasil membuat ${createdBooks.length} Books.`);
+  logger.info(`Berhasil membuat ${createdBooks.length} Books.`);
 
   // 5. Seeding Borrowings (20 Data)
   const createdBorrowings = [];
@@ -87,14 +88,14 @@ async function main() {
     });
     createdBorrowings.push(borrowing);
   }
-  console.log(`Berhasil membuat ${createdBorrowings.length} Borrowings.`);
+  logger.info(`Berhasil membuat ${createdBorrowings.length} Borrowings.`);
 
-  console.log("Seeding selesai dengan sukses!");
+  logger.info("Seeding selesai dengan sukses!");
 }
 
 main()
   .catch((e) => {
-    console.error("Terjadi error saat seeding:", e);
+    logger.error("Terjadi error saat seeding:", e);
     process.exit(1);
   })
   .finally(async () => {
