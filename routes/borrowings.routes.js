@@ -7,11 +7,12 @@ import {
     returnBook,
     deleteBorrowing,
 } from "../controllers/borrowings.controller.js"
+import { authorizeAdmin } from "../middleware/admin.middleware.js";
 
 const router = express.Router()
 
-router.get('/', getAllBorrowings)
-router.get('/:id', getBorrowingById)
+router.get('/', authorizeAdmin, getAllBorrowings)
+router.get('/:id',authorizeAdmin, getBorrowingById)
 router.post('/', createBorrowing)
 router.put('/:id/', returnBook)
 router.delete('/', deleteBorrowing)

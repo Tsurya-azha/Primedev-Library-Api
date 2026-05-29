@@ -15,27 +15,29 @@ datasource db {
 }
 
 model Users {
-  id        Int      @id @default(autoincrement())
-  name      String
-  email     String   @unique
-  password  String   @db.VarChar(255)
-  role      String   @default("USER")
-  createdAt DateTime @default(now())
-  profiles Profiles?
+  id         Int          @id @default(autoincrement())
+  name       String
+  email      String       @unique
+  password   String       @db.VarChar(255)
+  role       String       @default("USER")
+  createdAt  DateTime     @default(now())
+  profiles   Profiles?
   borrowings Borrowings[]
+  reviews    review[]
 }
 
 model Books {
-  id           Int         @id @default(autoincrement())
-  categoryId   Int
-  title        String
-  author       String
-  year         Int
-  available    Boolean     @default(true)
-  cloudinary   String?
-  createdAt    DateTime    @default(now())
-  categories   Categories? @relation(fields: [categoryId], references: [id])
-  borrowings   Borrowings[]
+  id         Int          @id @default(autoincrement())
+  categoryId Int
+  title      String
+  author     String
+  year       Int
+  available  Boolean      @default(true)
+  cloudinary String?
+  createdAt  DateTime     @default(now())
+  categories Categories?  @relation(fields: [categoryId], references: [id])
+  borrowings Borrowings[]
+  reviews    review[]
 }
 
 model Profiles {
@@ -44,7 +46,7 @@ model Profiles {
   address   String?
   phone     String?
   createdAt DateTime @default(now())
-  
+
   user Users @relation(fields: [userId], references: [id])
 }
 
@@ -52,7 +54,7 @@ model Categories {
   id        Int      @id @default(autoincrement())
   name      String
   createdAt DateTime @default(now())
-  
+
   books Books[]
 }
 
@@ -65,4 +67,15 @@ model Borrowings {
   createdAt   DateTime  @default(now())
   borrower    Users     @relation(fields: [userId], references: [id])
   book        Books     @relation(fields: [bookId], references: [id])
+}
+
+model review {
+  reviewId  Int         @id @default(autoincrement())
+  rating    Int      
+  userId    Int
+  bookId    Int
+  comment   String
+  createdAt DateTime @default(now())
+  reviewer  Users    @relation(fields: [userId], references: [id])
+  book      Books    @relation(fields: [bookId], references: [id])
 }
