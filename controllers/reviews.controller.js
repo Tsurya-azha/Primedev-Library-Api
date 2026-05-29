@@ -51,16 +51,6 @@ export const getReviewsByBookId = async (req, res) => {
         const review = await prisma.review.findMany({
             where: {bookId: id},
             include: {reviewer: true},
-            select: {
-                id: true,
-                rating: true,
-                comment: true,
-                user: {
-                    select: {
-                        name: true
-                    }
-                }
-            }
         })
 
         res.json({
