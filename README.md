@@ -83,8 +83,9 @@ Rute ini digunakan untuk mengelola data ulasan, komentar, dan rating yang diberi
 
 | Method | Endpoint | Deskripsi | Hak Akses |
 | :--- | :--- | :--- | :--- |
-| `GET` | `/books/:bookId/reviews` | Mengambil semua daftar ulasan untuk satu buku tertentu | Publik |
+| `GET` | `/books/:bookId/reviews` | Mengambil semua daftar ulasan untuk satu buku tertentu | Login Required |
 | `POST` | `/reviews` | Membuat ulasan dan rating baru untuk buku | Login Required |
+
 buat yang lain besok aja😴
 
 
