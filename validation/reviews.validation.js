@@ -4,7 +4,7 @@ export const ratingValidation = [
     body( 'rating' )
     .optional()
     .isInt({ min:1, max:5 })
-    .withMessage('Rating must be a number!')
+    .withMessage('Rating must between 1 to 5')
     .notEmpty()
     .withMessage('Rating is required!')
 ]
